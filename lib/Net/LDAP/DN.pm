@@ -80,6 +80,9 @@ sub options {
         if (exists $opts{case_insensitive}) {
             $self->case_insensitive(delete $opts{case_insensitive});
         }
+        unless ($opts{casefold}) {
+            $opts{casefold} = $casefold;
+        }
         $self->{_options} = [%opts];
     }
     return @{$self->{_options}};
