@@ -105,9 +105,16 @@ $dn-E<gt>append(OTHER)
 
 Create a new object. Optionally you can provide a DN as a string or an
 array ref like L<Net::LDAP::Util>'s I<ldap_explode_dn> and a pair of
-options like I<ldap_explode_dn> / I<canonical_dn> support them. One extra
-option C<case_insensitive> may be given to compare the RDN values case
-insensitive.
+options like I<ldap_explode_dn> / I<canonical_dn> support them.
+
+To set a default of C<casefold =E<gt> lower> use
+
+ $Net::LDAP::DN::casefold = 'lower';
+
+before calling C<Net::LDAP::DN-E<gt>new()> the first time.
+
+One extra option C<case_insensitive> may be given to compare the RDN values
+case insensitive.
 
  Net::LDAP::DN->new()
 

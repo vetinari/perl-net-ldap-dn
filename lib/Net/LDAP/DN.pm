@@ -6,9 +6,9 @@ package Net::LDAP::DN;
 use strict;
 use Net::LDAP::Util;
 use Carp qw/ /;
-use vars qw/ $VERSION /;
 
-$VERSION = "0.01";
+our $VERSION = "0.02";
+our $casefold = 'upper';
 
 use overload
     '""'  => sub { $_[0]->as_string;         },
@@ -33,7 +33,7 @@ sub new {
     my $type = ref($me) || $me;
     my $self = bless {}, $type;
 
-    @opts = (casefold => 'upper') unless @opts;
+    @opts = (casefold => $casefold) unless @opts;
     Carp::croak "odd number of option arguments" if @opts % 2;
     $self->options(@opts);
 
@@ -42,8 +42,7 @@ sub new {
 
     if (ref $dn eq 'HASH') {
         $self->dn([$dn]);
-    }
-    else {
+    } else {
         $self->dn($dn);
     }
     return $self;
@@ -59,15 +58,16 @@ sub clone {
 
     unless (defined $dn) {
         my @dn = ();
-        foreach my $rdn (@{ $self->dn }) {
+        foreach (@{ $self->dn }) {
             my $copy = {};
-            while (my ($attr, $val) = each %$rdn) {
+            while (my ($attr, $val) = each %$_) {
                 $copy->{$attr} = $val;
             }
             push @dn, $copy;
         }
         $dn = [@dn];
     }
+
     $clone->dn($dn);
     return $clone;
 }
@@ -248,27 +248,31 @@ sub _compare {
     # NOTE: scalar(@lhs) must be less or equal scalar(@rhs)
     my @lhs = @{ $_[0] };
     my @rhs = @{ $_[1] };
+
     for (my $i = 0; $i < scalar(@lhs); $i++) {
         return undef
             unless $self->_rdn_equal($lhs[$i], $rhs[$i]);
     }
+
     return 1;
 }
 
 sub _rdn_equal {
     my $self = shift;
     my ($lhs, $rhs) = @_;
+
     return undef unless keys %$lhs == keys %$rhs;
+
     foreach my $key (keys %$lhs) {
         return undef if not exists $rhs->{$key};
 
         if ($self->case_insensitive) {
             return undef if lc $lhs->{$key} ne lc $rhs->{$key};
-        }
-        else {
+        } else {
             return undef if $lhs->{$key} ne $rhs->{$key};
         }
     }
+
     return 1;
 }
 
